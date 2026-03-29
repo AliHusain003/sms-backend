@@ -1,35 +1,44 @@
 import { gql } from "apollo-server-express";
 
 export const teacherMutation = gql`
+  input CreateTeacherInput {
+    # Employee fields
+    firstName: String!
+    lastName: String!
+    mobileNumber: String!
+    address: String!
+    joiningDate: String!
+    salary: Float
+    status: String!
+
+    # Teacher specific fields
+    qualification: String!
+    experience: Int
+    gender: String!
+    dateOfBirth: String!
+  }
+
+  input UpdateTeacherInput {
+    firstName: String
+    lastName: String
+    mobileNumber: String
+    address: String
+    joiningDate: String
+    salary: Float
+    status: String
+
+    qualification: String
+    experience: Int
+    gender: String
+    dateOfBirth: String
+  }
+
   extend type Mutation {
-    createTeacher(
-      userId: Int
-      firstName: String!
-      lastName: String!
-      gender: String!
-      dateOfBirth: String!
-      mobileNumber: String!
-      address: String!
-      qualification: String!
-      experience: Int
-      joiningDate: String!
-      salary: Float
-      status: String!
-    ): TeacherResponse!
+    createTeacher(data: CreateTeacherInput!): TeacherResponse!
 
     updateTeacher(
       teacherId: Int!
-      firstName: String
-      lastName: String
-      gender: String
-      dateOfBirth: String
-      mobileNumber: String
-      address: String
-      qualification: String
-      experience: Int
-      joiningDate: String
-      salary: Float
-      status: String
+      data: UpdateTeacherInput!
     ): TeacherResponse!
 
     deleteTeacher(teacherId: Int!): TeacherResponse!

@@ -1,36 +1,35 @@
 import { gql } from "apollo-server-express";
 
+
 export const teacherType = gql`
   type Teacher {
-    teacherId: ID!
+    id: ID!
 
-    # Linked user (login info)
-    user: User!
+    employee: Employee!
 
-    # Personal Information
-    firstName: String!
-    lastName: String!
+    qualification: String!
+    experience: Int
     gender: String!
     dateOfBirth: String!
 
-    # Contact Information
-    mobileNumber: String!
-    address: String!
+    assignments: [TeachingAssignment!]!
 
-    # Professional Information
-    qualification: String!
-    experience: Int
-    salary: Float
-
-    # Employment Details
-    joiningDate: String!
-    status: String!
-
-    # Relations
-    subjects: [Subject!]!
-
-    # System Info
     createdAt: String!
     updatedAt: String!
   }
+    
+    type Employee {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  mobileNumber: String!
+  address: String!
+  joiningDate: String!
+  salary: Float
+  status: String!
+  type: EmployeeType!
+  createdAt: String!
+  updatedAt: String!
+}
+
 `;

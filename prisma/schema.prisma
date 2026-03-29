@@ -15,11 +15,10 @@ model User {
   password String
   role     Role
 
-  teacher  Teacher[]
+  employee Employee?
 
   @@map("users")
 }
-
 
 enum Role {
   admin
@@ -46,36 +45,127 @@ model Student {
 }
 
 model Subject {
-  subjectId Int     @id @default(autoincrement())
-  name      String
-  teacherId Int
-  teacher   Teacher @relation(fields: [teacherId], references: [teacherId])
+  id   Int    @id @default(autoincrement())
+  name String
+
+  assignments TeachingAssignment[]
 
   @@map("subjects")
 }
 
-model Teacher {
-  teacherId Int  @id @default(autoincrement())
-  userId    Int  
-  user      User @relation(fields: [userId], references: [id])
+model Class {
+  id   Int    @id @default(autoincrement())
+  name String
 
-  firstName     String
-  lastName      String
-  gender        String
-  dateOfBirth   DateTime
-  mobileNumber  String
-  address       String
+  sections Section[]
+
+  @@map("classes")
+}
+
+model Section {
+  id      Int    @id @default(autoincrement())
+  name    String
+  classId Int
+  class   Class  @relation(fields: [classId], references: [id])
+
+  assignments TeachingAssignment[]
+
+  @@map("sections")
+}
+
+model TeachingAssignment {
+  id Int @id @default(autoincrement())
+
+  teacherId Int
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  subjectId Int
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  sectionId Int
+  section   Section @relation(fields: [sectionId], references: [id])
+
+  academicYear String
+
+  @@unique([teacherId, subjectId, sectionId, academicYear])
+  @@map("teaching_assignments")
+}
+
+model Employee {
+  id     Int   @id @default(autoincrement())
+  userId Int?  @unique
+  user   User? @relation(fields: [userId], references: [id])
+
+  firstName    String
+  lastName     String
+  mobileNumber String
+  address      String
+  joiningDate  DateTime
+  salary       Float?
+  status       String
+
+  type EmployeeType
+
+  teacher    Teacher?
+  accountant Accountant?
+  adminStaff AdminStaff?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("employees")
+}
+
+enum EmployeeType {
+  TEACHER
+  ACCOUNTANT
+  ADMIN_STAFF
+  PRINCIPAL
+  LIBRARIAN
+  SUPPORT_STAFF
+}
+
+model Accountant {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @unique
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  certification String?
+  experience    Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("accountants")
+}
+
+model AdminStaff {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @unique
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  department String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_staff")
+}
+
+model Teacher {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @unique
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
   qualification String
   experience    Int?
-  joiningDate   DateTime
-  salary        Float?
-  status        String
+  gender        String
+  dateOfBirth   DateTime
 
-  subjects  Subject[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  assignments TeachingAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("teachers")
 }
-
-
