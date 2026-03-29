@@ -41,7 +41,10 @@ export const employeeResolvers = {
         if (!context.userId) return failed("Not authenticated");
 
         const employee = await prisma.employee.findUnique({
-          where: { id: employeeId },
+          where: { id: Number(employeeId) },
+          include: {
+            teacher: true, // include teacher details if employee is a teacher
+          },
         });
 
         if (!employee) return failed("Employee not found");
@@ -133,6 +136,9 @@ export const employeeResolvers = {
             joiningDate: data.joiningDate
               ? new Date(data.joiningDate)
               : undefined,
+          },
+          include: {
+            teacher: true, // include teacher details if employee is a teacher
           },
         });
 
