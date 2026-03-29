@@ -7,7 +7,7 @@ import { StudentType } from "../Graphql/students/student.typeDef.js";
 import { teacherType } from "../Graphql/teachers/teacher.typeDef.js";
 import { studentResponses } from "../Graphql/students/student.response.js";
 import { teacherResponse } from "../Graphql/teachers/teacher.response.js";
-import { authResponse } from "./auth/auth.response.js";
+import { AuthResponse } from "./auth/auth.response.js";
 import { teacherMutation } from "../Graphql/teachers/teacher.mutation.js";
 import { studentMutation } from "../Graphql/students/student.mutation.js";
 import { authMutation } from "../Graphql/auth/auth.mutation.js";
@@ -21,6 +21,10 @@ import { subjectResponse } from "../Graphql/subjects/subject.response.js";
 import { subjectQuery } from "../Graphql/subjects/subject.query.js";
 import { subjectMutation } from "../Graphql/subjects/subject.mutation.js";
 import { userResponse } from "./users/user.response.js";
+import { teachingAssignmentType } from "./teachingAssignments/teachingassignment.type.js";
+import { employeeType } from "./employees/employee.type.js";
+import { employeeQuery } from "./employees/employee.query.js";
+import { employeeMutation } from "./employees/employee.mutation.js";
 
 const typeDefs = mergeTypeDefs([
   rootTypes,
@@ -29,10 +33,14 @@ const typeDefs = mergeTypeDefs([
   StudentType,
   teacherType,
   studentResponses,
+  teachingAssignmentType,
   AuthType,
+  employeeType,
+  employeeMutation,
+  employeeQuery,
   teacherQuery,
   studentQuery,
-  authResponse,
+  AuthResponse,
   teacherMutation,
   studentMutation,
   teacherResponse,

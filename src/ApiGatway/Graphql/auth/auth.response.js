@@ -1,7 +1,7 @@
 import { gql } from 'apollo-server-express';
 
-export const authResponse = gql`
-    type authResponse {
+export const AuthResponse = gql`
+    type AuthResponse {
         status: String!
         message: String!
         data: AuthPayload

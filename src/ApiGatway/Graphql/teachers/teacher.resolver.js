@@ -14,8 +14,9 @@ export const teacherResolvers = {
         const teachers = await prisma.teacher.findMany({
           skip,
           take: limit,
-          orderBy: {
-            createdAt: "desc",
+          orderBy: { createdAt: "desc" },
+          include: {
+            employee: true,   // IMPORTANT
           },
         });
 
@@ -42,7 +43,10 @@ export const teacherResolvers = {
         if (!context.userId) return failed("Not authenticated");
 
         const teacher = await prisma.teacher.findUnique({
-          where: { teacherId: args.teacherId },
+          where: { id: args.teacherId },
+          include: {
+            employee: true,
+          },
         });
 
         if (!teacher) return failed("Teacher not found");
@@ -55,23 +59,44 @@ export const teacherResolvers = {
   },
 
   Mutation: {
-    createTeacher: async (_parent, args, context) => {
+    createTeacher: async (_parent, { data }, context) => {
       try {
-        if (!context.userId) {
-          return failed("Not authenticated");
-        }
+        if (!context.userId) return failed("Not authenticated");
 
-        const newTeacher = await prisma.teacher.create({
-          data: {
-            ...args,
-            dateOfBirth: new Date(args.dateOfBirth),
-            joiningDate: new Date(args.joiningDate),
-          },
+        const result = await prisma.$transaction(async (tx) => {
+
+          // 1️⃣ Create Employee first
+          const employee = await tx.employee.create({
+            data: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              mobileNumber: data.mobileNumber,
+              address: data.address,
+              joiningDate: new Date(data.joiningDate),
+              salary: data.salary,
+              status: data.status,
+              type: "TEACHER",
+            },
+          });
+
+          // 2️⃣ Create Teacher linked to employee
+          const teacher = await tx.teacher.create({
+            data: {
+              employeeId: employee.id,
+              qualification: data.qualification,
+              experience: data.experience,
+              gender: data.gender,
+              dateOfBirth: new Date(data.dateOfBirth),
+            },
+            include: {
+              employee: true,
+            },
+          });
+
+          return teacher;
         });
 
-        console.log("Teacher created:", newTeacher);
-
-        return success("Teacher created successfully", newTeacher);
+        return success("Teacher created successfully", result);
       } catch (error) {
         console.error("CREATE TEACHER ERROR:", error);
         return failed(error.message);
@@ -82,8 +107,22 @@ export const teacherResolvers = {
       try {
         if (!context.userId) return failed("Not authenticated");
 
-        await prisma.teacher.delete({
-          where: { teacherId },
+        await prisma.$transaction(async (tx) => {
+
+          const teacher = await tx.teacher.findUnique({
+            where: { id: teacherId },
+          });
+
+          if (!teacher) throw new Error("Teacher not found");
+
+          await tx.teacher.delete({
+            where: { id: teacherId },
+          });
+
+          await tx.employee.delete({
+            where: { id: teacher.employeeId },
+          });
+
         });
 
         return success("Teacher deleted successfully", true);
@@ -92,16 +131,52 @@ export const teacherResolvers = {
       }
     },
 
-    updateTeacher: async (_parent, { teacherId, ...data }, context) => {
+    updateTeacher: async (_parent, { teacherId, data }, context) => {
       try {
         if (!context.userId) return failed("Not authenticated");
 
-        const updatedTeacher = await prisma.teacher.update({
-          where: { teacherId },
-          data,
+        const teacher = await prisma.teacher.findUnique({
+          where: { id: teacherId },
         });
 
-        return success("Teacher updated successfully", updatedTeacher);
+        if (!teacher) return failed("Teacher not found");
+
+        const updated = await prisma.$transaction(async (tx) => {
+
+          await tx.employee.update({
+            where: { id: teacher.employeeId },
+            data: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              mobileNumber: data.mobileNumber,
+              address: data.address,
+              joiningDate: data.joiningDate
+                ? new Date(data.joiningDate)
+                : undefined,
+              salary: data.salary,
+              status: data.status,
+            },
+          });
+
+          const updatedTeacher = await tx.teacher.update({
+            where: { id: teacherId },
+            data: {
+              qualification: data.qualification,
+              experience: data.experience,
+              gender: data.gender,
+              dateOfBirth: data.dateOfBirth
+                ? new Date(data.dateOfBirth)
+                : undefined,
+            },
+            include: {
+              employee: true,
+            },
+          });
+
+          return updatedTeacher;
+        });
+
+        return success("Teacher updated successfully", updated);
       } catch (error) {
         return failed(error.message);
       }
