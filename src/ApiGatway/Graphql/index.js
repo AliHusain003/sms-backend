@@ -25,6 +25,7 @@ import { teachingAssignmentType } from "./teachingAssignments/teachingassignment
 import { employeeType } from "./employees/employee.type.js";
 import { employeeQuery } from "./employees/employee.query.js";
 import { employeeMutation } from "./employees/employee.mutation.js";
+import { employeeResponse } from "./employees/employee.response.js";
 
 const typeDefs = mergeTypeDefs([
   rootTypes,
@@ -38,6 +39,7 @@ const typeDefs = mergeTypeDefs([
   employeeType,
   employeeMutation,
   employeeQuery,
+  employeeResponse,
   teacherQuery,
   studentQuery,
   AuthResponse,
