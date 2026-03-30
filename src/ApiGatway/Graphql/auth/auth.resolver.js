@@ -36,14 +36,14 @@ export const authResolver = {
       if (!valid) throw new Error("Incorrect password");
 
       const token = createToken(user.id);
+      const isProd = process.env.NODE_ENV === "production";
 
       // 🔥 SET COOKIE
       context.res.cookie("token", token, {
         httpOnly: true,
         path: "/",
-        sameSite: "lax", // 🔥 REQUIRED for cross-origin
-        secure: false, // 🔥 OK for localhost ONLY
-        
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
       });
 
       return {
@@ -52,10 +52,12 @@ export const authResolver = {
       };
     },
     logout: async (_parent, _args, context) => {
+      const isProd = process.env.NODE_ENV === "production";
       context.res.cookie("token", "", {
         httpOnly: true,
         path: "/",
-        sameSite: "lax",
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
         expires: new Date(0), // 🔥 delete cookie
       });
 

@@ -11,9 +11,19 @@ const app = express();
 // 🔥 ORDER MATTERS
 app.use(cookieParser());
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // frontend URL
+    origin: (origin, callback) => {
+      // Allow server-to-server tools and non-browser requests.
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,               // allow cookies
   })
 );
