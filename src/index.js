@@ -30,20 +30,24 @@ app.use(
 
 app.use(express.json());
 
-const PORT = process.env.PORT || 4000;
-
 async function startServer() {
   await server.start();
   server.applyMiddleware({
     app,
     cors: false, // 🔥 IMPORTANT: disable Apollo's internal CORS
   });
+  if (process.env.NODE_ENV !== "production") {
+    const PORT = process.env.PORT || 4000;
 
-  app.listen(PORT, () => {
-    console.log(
-      `GraphQL server running at http://localhost:${PORT}${server.graphqlPath}`
-    );
-  });
+    app.listen(PORT, () => {
+      console.log(
+        `🖥️ Local: http://localhost:${PORT}${server.graphqlPath}`
+      );
+      console.log("NODE_ENV:", process.env.NODE_ENV);
+    });
+  }
 }
 
 startServer();
+
+export default app;
