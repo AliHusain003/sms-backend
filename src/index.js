@@ -3,12 +3,12 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import server from "./ApiGatway/ApolloServer/apolloServer.js";
 import dotenv from "dotenv";
-import serverless from "serverless-http";
 
 dotenv.config();
 
 const app = express();
 
+// 🔥 ORDER MATTERS
 app.use(cookieParser());
 
 const allowedOrigins = [
@@ -19,32 +19,35 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow server-to-server tools and non-browser requests.
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
-    credentials: true,
+    credentials: true,               // allow cookies
   })
 );
 
 app.use(express.json());
 
-let isStarted = false;
-
 async function startServer() {
-  if (!isStarted) {
-    await server.start();
-    server.applyMiddleware({
-      app,
-      cors: false,
-      path: "/graphql", // ✅ explicitly define
+  await server.start();
+  server.applyMiddleware({
+    app,
+    cors: false, // 🔥 IMPORTANT: disable Apollo's internal CORS
+  });
+  if (process.env.NODE_ENV !== "production") {
+    const PORT = process.env.PORT || 4000;
+
+    app.listen(PORT, () => {
+      console.log(
+        `🖥️ Local: http://localhost:${PORT}${server.graphqlPath}`
+      );
+      console.log("NODE_ENV:", process.env.NODE_ENV);
     });
-    isStarted = true;
   }
 }
 
-// 🔥 THIS IS THE FIX
-export default async function handler(req, res) {
-  await startServer();
-  return serverless(app)(req, res);
-}
+startServer();
+
+export default app;
