@@ -30,7 +30,11 @@ app.use(
 
 app.use(express.json());
 
-async function startServer() {
+app.get("/", (_req, res) => {
+  res.status(200).type("text/plain").send("OK — GraphQL at /graphql");
+});
+
+async function boot() {
   await server.start();
   server.applyMiddleware({
     app,
@@ -48,6 +52,9 @@ async function startServer() {
   }
 }
 
-startServer();
+const bootPromise = boot();
 
-export default app;
+export default async function handler(req, res) {
+  await bootPromise;
+  app(req, res);
+}
